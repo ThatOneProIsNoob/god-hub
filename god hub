@@ -1,0 +1,105 @@
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ExecuteScriptEvent = ReplicatedStorage:WaitForChild("ExecuteScript")
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "GodHub"
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 400, 0, 300)
+frame.Position = UDim2.new(0.5, -200, 0.5, -150)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+title.BorderSizePixel = 0
+title.Text = "God Hub"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 18
+title.Parent = frame
+
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(0.3, 0, 1, -40)
+scrollFrame.Position = UDim2.new(0, 0, 0, 40)
+scrollFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+scrollFrame.BorderSizePixel = 0
+scrollFrame.CanvasSize = UDim2.new(0, 0, 10, 0)
+scrollFrame.Parent = frame
+
+local textBox = Instance.new("TextBox")
+textBox.Size = UDim2.new(0.7, -20, 0, 200)
+textBox.Position = UDim2.new(0.3, 10, 0, 40)
+textBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+textBox.BorderSizePixel = 0
+textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+textBox.Font = Enum.Font.SourceSansBold
+textBox.TextSize = 14
+textBox.Text = ""
+textBox.MultiLine = true
+textBox.Parent = frame
+
+local runButton = Instance.new("TextButton")
+runButton.Size = UDim2.new(0.7, -20, 0, 30)
+runButton.Position = UDim2.new(0.3, 10, 0, 250)
+runButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+runButton.BorderSizePixel = 0
+runButton.Text = "Run"
+runButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+runButton.Font = Enum.Font.SourceSansBold
+runButton.TextSize = 16
+runButton.Parent = frame
+
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+title.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+title.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+runButton.MouseButton1Click:Connect(function()
+    local scriptToExecute = textBox.Text
+    local func, err = loadstring(scriptToExecute)
+    if func then
+        local success, result = pcall(func)
+        if not success then
+            warn("Error executing script: " .. result)
+        end
+    else
+        warn("Error loading script: " .. err)
+    end
+end)
+
+gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
