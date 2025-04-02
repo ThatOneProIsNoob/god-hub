@@ -1,105 +1,172 @@
-local UserInputService = game:GetService("UserInputService")
+@@ -1,7 +1,7 @@
+
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ExecuteScriptEvent = ReplicatedStorage:WaitForChild("ExecuteScript")
+local StarterGui = game:GetService("StarterGui")
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "GodHub"
-gui.ResetOnSpawn = false
+-- Function to create the ThatOnePro GUI from scratch
+-- Function to show the ThatOnePro GUI
+local function showThatOneProGui()
+    local player = Players.LocalPlayer
+    if not player then
+@@ -20,21 +20,147 @@
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 400, 0, 300)
-frame.Position = UDim2.new(0.5, -200, 0.5, -150)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BorderSizePixel = 0
-frame.Parent = gui
+        existingGui:Destroy() -- Remove it if it already exists
+    end
+    
+    -- Create the ScreenGui from scratch
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "ThatOnePro"
+    screenGui.IgnoreGuiInset = true
+    screenGui.Parent = playerGui
+    
+    -- Create main frame
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "MainFrame"
+    mainFrame.Size = UDim2.new(0.5, 0, 0.5, 0)
+    mainFrame.Position = UDim2.new(0.25, 0, 0.25, 0)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Parent = screenGui
+    
+    -- Create title label
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Name = "TitleLabel"
+    titleLabel.Size = UDim2.new(1, 0, 0.1, 0)
+    titleLabel.Position = UDim2.new(0, 0, 0, 0)
+    titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    titleLabel.BorderSizePixel = 0
+    titleLabel.Text = "ThatOnePro Panel"
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.TextSize = 24
+    titleLabel.Font = Enum.Font.SourceSansBold
+    titleLabel.Parent = mainFrame
+    
+    -- Create scrolling frame for content
+    local scrollingFrame = Instance.new("ScrollingFrame")
+    scrollingFrame.Name = "ContentScrollFrame"
+    scrollingFrame.Size = UDim2.new(0.9, 0, 0.7, 0)
+    scrollingFrame.Position = UDim2.new(0.05, 0, 0.15, 0)
+    scrollingFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    scrollingFrame.BorderSizePixel = 0
+    scrollingFrame.ScrollBarThickness = 6
+    scrollingFrame.CanvasSize = UDim2.new(0, 0, 2, 0) -- Allow scrolling
+    scrollingFrame.Parent = mainFrame
+    
+    -- Create text content in scrolling frame
+    local contentText = Instance.new("TextLabel")
+    contentText.Name = "ContentText"
+    contentText.Size = UDim2.new(0.95, 0, 0.95, 0)
+    contentText.Position = UDim2.new(0.025, 0, 0.025, 0)
+    contentText.BackgroundTransparency = 1
+    contentText.Text = "This is the ThatOnePro Panel. Use this interface to access various features and functionality."
+    contentText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    contentText.TextSize = 16
+    contentText.Font = Enum.Font.SourceSans
+    contentText.TextWrapped = true
+    contentText.TextXAlignment = Enum.TextXAlignment.Left
+    contentText.TextYAlignment = Enum.TextYAlignment.Top
+    contentText.Parent = scrollingFrame
+    
+    -- Create unban button
+    local unbanButton = Instance.new("TextButton")
+    unbanButton.Name = "UnbanButton"
+    unbanButton.Size = UDim2.new(0.4, 0, 0.08, 0)
+    unbanButton.Position = UDim2.new(0.3, 0, 0.9, 0)
+    unbanButton.BackgroundColor3 = Color3.fromRGB(59, 165, 93)
+    unbanButton.BorderSizePixel = 0
+    unbanButton.Text = "Unban Request"
+    unbanButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    unbanButton.TextSize = 18
+    unbanButton.Font = Enum.Font.SourceSansBold
+    unbanButton.Parent = mainFrame
+    
+    -- Create unban remote event if it doesn't exist
+    local unbanRemote = ReplicatedStorage:FindFirstChild("UnbanRequest")
+    if not unbanRemote then
+        unbanRemote = Instance.new("RemoteEvent")
+        unbanRemote.Name = "UnbanRequest"
+        unbanRemote.Parent = ReplicatedStorage
+    -- Get the original GUI from StarterGui
+    local originalGui = StarterGui:FindFirstChild("ThatOnePro")
+    if not originalGui then
+        warn("ThatOnePro ScreenGui not found in StarterGui")
+        return
+    end
+    
+    -- Add unban button functionality
+    local unbanButtonScript = Instance.new("LocalScript")
+    unbanButtonScript.Parent = unbanButton
+    unbanButtonScript.Source = [[
+local button = script.Parent
+local unbanRemote = game:GetService("ReplicatedStorage"):FindFirstChild("UnbanRequest")
+local players = game:GetService("Players")
+local localPlayer = players.LocalPlayer
+local screenGui = button.Parent.Parent
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-title.BorderSizePixel = 0
-title.Text = "God Hub"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Font = Enum.Font.SourceSansBold
-title.TextSize = 18
-title.Parent = frame
+button.MouseButton1Click:Connect(function()
+    -- When the button is clicked, fire the remote event to request an unban
+    if unbanRemote then
+        unbanRemote:FireServer()
+        button.Text = "Request Sent!"
+        button.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        task.wait(2)
+        button.Text = "Unban Request"
+        button.BackgroundColor3 = Color3.fromRGB(59, 165, 93)
+    else
+        button.Text = "Error: Remote not found"
+        button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        task.wait(2)
+        button.Text = "Unban Request"
+        button.BackgroundColor3 = Color3.fromRGB(59, 165, 93)
+    end
+end)
 
-local scrollFrame = Instance.new("ScrollingFrame")
-scrollFrame.Size = UDim2.new(0.3, 0, 1, -40)
-scrollFrame.Position = UDim2.new(0, 0, 0, 40)
-scrollFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-scrollFrame.BorderSizePixel = 0
-scrollFrame.CanvasSize = UDim2.new(0, 0, 10, 0)
-scrollFrame.Parent = frame
-
-local textBox = Instance.new("TextBox")
-textBox.Size = UDim2.new(0.7, -20, 0, 200)
-textBox.Position = UDim2.new(0.3, 10, 0, 40)
-textBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-textBox.BorderSizePixel = 0
-textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-textBox.Font = Enum.Font.SourceSansBold
-textBox.TextSize = 14
-textBox.Text = ""
-textBox.MultiLine = true
-textBox.Parent = frame
-
-local runButton = Instance.new("TextButton")
-runButton.Size = UDim2.new(0.7, -20, 0, 30)
-runButton.Position = UDim2.new(0.3, 10, 0, 250)
-runButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-runButton.BorderSizePixel = 0
-runButton.Text = "Run"
-runButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-runButton.Font = Enum.Font.SourceSansBold
-runButton.TextSize = 16
-runButton.Parent = frame
-
-local dragging = false
-local dragInput, dragStart, startPos
-
-local function update(input)
-    local delta = input.Position - dragStart
-    frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+-- Listen for server response
+if unbanRemote then
+    unbanRemote.OnClientEvent:Connect(function(success)
+        if not success then
+            -- If unban failed, show a notification
+            button.Text = "Unban Failed"
+            button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+            task.wait(2)
+            button.Text = "Unban Request"
+            button.BackgroundColor3 = Color3.fromRGB(59, 165, 93)
+        end
+    end)
+end
+]]
+    -- Clone the GUI with all its original elements and positions
+    local guiClone = originalGui:Clone()
+    guiClone.Parent = playerGui
+    
+    -- Create close button
+    local closeButton = Instance.new("TextButton")
+    closeButton.Name = "CloseButton"
+    closeButton.Size = UDim2.new(0.05, 0, 0.05, 0)
+    closeButton.Position = UDim2.new(0.95, -5, 0, 5)
+    closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    closeButton.BorderSizePixel = 0
+    closeButton.Text = "X"
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.TextSize = 14
+    closeButton.Font = Enum.Font.SourceSansBold
+    closeButton.Parent = mainFrame
+    -- Make sure it's visible
+    guiClone.Enabled = true
+    
+    -- Add close button functionality
+    local closeScript = Instance.new("LocalScript")
+    closeScript.Parent = closeButton
+    closeScript.Source = [[
+script.Parent.MouseButton1Click:Connect(function()
+    script.Parent.Parent.Parent:Destroy()
+end)
+]]
+    
+    print("ThatOnePro GUI has been created and displayed")
+    print("ThatOnePro GUI has been displayed with all elements in their original positions")
 end
 
-title.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = frame.Position
-
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-title.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
-    end
-end)
-
-runButton.MouseButton1Click:Connect(function()
-    local scriptToExecute = textBox.Text
-    local func, err = loadstring(scriptToExecute)
-    if func then
-        local success, result = pcall(func)
-        if not success then
-            warn("Error executing script: " .. result)
-        end
-    else
-        warn("Error loading script: " .. err)
-    end
-end)
-
-gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+-- Execute immediately when the script runs
 
